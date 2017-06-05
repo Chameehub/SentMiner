@@ -88,8 +88,8 @@ for singleComment in commentList:
     singleComment = re.sub('[!@#$.,:?"]', ' ', singleComment)
 
     purifiedComments.append(singleComment)
-    # print(singleComment)
-    # print(" ")
+    print(singleComment)
+    print(" ")
 
 
 purifiedList["Comments"] = purifiedComments
@@ -104,6 +104,8 @@ text_string.rstrip("\n")
 freqs = Counter(text_string.split())
 
 print(freqs)
+
+# freqs = "sri lnka"
 
 for singleword in freqs:
     singleComment = singleComment.replace("\"","")

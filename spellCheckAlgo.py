@@ -1,6 +1,7 @@
 # Input text
 import enchant
 from difflib import SequenceMatcher
+import re
 import operator
 
 
@@ -47,16 +48,21 @@ def wordPrediction(word, suggestList):
 
     try:
         output = max(finalResult, key=finalResult.get)
+        if not output:
+            output = word
     except ValueError:
         output = word
+
+    output = output.replace(' ','')
     return output
 
 
 # suggest new word
-def noSuggestionPrediction(word, suggestList1, languageReference):
+def noSuggestionPrediction(word,languageReference):
     # empty suggest list to be filled by meanwhile
     suggestList = []
-    suggestList = suggestList1
+
+    suggestList = languageReference.suggest(word)
 
     # English prefixes list
     # key : prefixes || value : short form of language
@@ -76,7 +82,7 @@ def noSuggestionPrediction(word, suggestList1, languageReference):
                     'sion': 'sn',
                     'tion': 'tn', 'esque': 'sq', 'ful': 'fl', 'ward': 'wrd', 'ism': 'sm', 'wards': 'wrds',
                     'ist': 'st',
-                    'ify': 'fy', 'icalwise': 'clws', 'ity': 'ty', 'ious': 'is'}
+                    'ify': 'fy', 'icalwise': 'clws', 'ity': 'ty', 'ious': 'is','tor':'tr'}
 
     # Iterate Prefixes List
     for key in prefixList:
@@ -112,12 +118,15 @@ def noSuggestionPrediction(word, suggestList1, languageReference):
     return wordPrediction(word, suggestList)
 
 
-text = "The gvnmnt initiatvs in dvlpmnt of tursm dte bk to 1937 whn the cyln turst burau ws estblshd. 7 hwevr, it ws clsd dwn in sptmbr 1939 due to wrld wr ¡¡. Aftr sr lnka s indpndnc the prmotion of tursm ws agin cnsidrd by reestablishng the cylon turst brd wch took ovr the fnction of the turst burau. Mor frml rcognition fr the cuntrys tursm sctr ws gvn wth the enctmnt of act no. 10 of 1966. 8 ths prvidd the lgisltion fr the estblishmnt of cyln turst brd. Snce thn the cyln turst brd hs fncitiond as the stat agncy, rspnsibl fr dvlpmnt and prmtion of the tursm sctr in sri lnka"
+text = "The gvnmnt initiatvs in dvlpmnt of tursm dte bk to 1937 whn the cyln turst burau ws estblshd. 7 hwevr, it ws clsd dwn in sptmbr 1939 due to wrld wr ¡¡. Aftr sr lnkas indpndnc the prmotion of tursm ws agin cnsidrd by reestablishng the cylon turst brd wch took ovr the fnction of the turst burau. Mor frml rcognition fr the cuntrys tursm sctr ws gvn wth the enctmnt of act no. 10 of 1966. 8 ths prvidd the lgisltion fr the estblishmnt of cyln turst brd. Snce thn the cyln turst brd hs fncitiond as the stat agncy, rspnsibl fr dvlpmnt and prmtion of the tursm sctr in sri lnka"
+
+correctTest = "The government initiatives in development of tourism date back to 1937 when the Ceylon Tourist Bureau was established.[7] However, it was closed down in September 1939 due to World War II. After Sri Lanka's independence the promotion of tourism was again considered by re-establishing the Ceylon Tourist Board which took over the function of the Tourist Bureau. More formal recognition for the country's tourism sector was given with the enactment of Act No. 10 of 1966.[8] This provided the legislation for the establishment of Ceylon Tourist Board. Since then the Ceylon Tourist Board has functioned as the state agency, responsible for development and promotion of the tourism sector in Sri Lanka"
 # text = "sri lnka"
 # set input into lower case
 text = text.lower()
+correctTest = correctTest.lower()
 
-originlText = text
+inputText = text
 # Initialize language in to US English
 # Import Personal word list to identify human name in local Context
 languageReference = enchant.DictWithPWL("en_US", "srilanka_namelist.txt")
@@ -125,35 +134,65 @@ languageReference = enchant.DictWithPWL("en_US", "srilanka_namelist.txt")
 for word in text.split():
 
     # Check whether the spellings are correct
-    if (languageReference.check(word)):
-        print("true")
+    if not(languageReference.check(word)):
 
-    else:
+        suggetion = noSuggestionPrediction(word, languageReference)
+        suggetion = suggetion.replace(" ", "")
+        text = text.replace(word, suggetion)
         # word = "gvnment"
-        suggestList = languageReference.suggest(word)
-        if suggestList.__len__() == 1:
-            suggetion = noSuggestionPrediction(word, suggestList, languageReference)
-            text = text.replace(word, suggetion)
-            # print(suggetion)
+        # suggestList = languageReference.suggest(word)
+        # if suggestList.__len__() == 1:
+        #     suggetion = noSuggestionPrediction(word, suggestList, languageReference)
+        #     text = text.replace(word, suggetion)
+        #     # print(suggetion)
+        #
+        #
+        # elif suggestList.__len__() == 0:
+        #     suggetion = noSuggestionPrediction(word, suggestList, languageReference)
+        #     suggetion = suggetion.replace(" ", "")
+        #     text = text.replace(word, suggetion)
+        #     # print(suggetion)
+        #
+        # else:
+        #     # suggetion = wordPrediction(word, suggestList, languageReference)
+        #     suggetion = noSuggestionPrediction(word, suggestList, languageReference)
+        #     uggetion = suggetion.replace(" ", "")
+        #     text = text.replace(word, suggetion)
+        # print(suggetion)
 
-
-        elif suggestList.__len__() == 0:
-            suggetion = noSuggestionPrediction(word, suggestList, languageReference)
-            suggetion = suggetion.replace(" ", "")
-            text = text.replace(word, suggetion)
-            # print(suggetion)
-
-        else:
-            # suggetion = wordPrediction(word, suggestList, languageReference)
-            suggetion = noSuggestionPrediction(word, suggestList, languageReference)
-            uggetion = suggetion.replace(" ", "")
-            text = text.replace(word, suggetion)
-            # print(suggetion)
-
-            # print(suggestList)
+        # print(suggestList)
 
 print(text)
-wordOfOriginalText = originlText.count(" ") + 1
+wordOfOriginalText = inputText.count(" ") + 1
 textCount = text.count(" ") + 1
-print(wordOfOriginalText)
-print(textCount)
+# print(wordOfOriginalText)
+# print(textCount)
+
+
+def findAccuracy(text, correctText):
+    text = re.sub(r'[^A-Za-z\d\s]', '', text)
+    text = ''.join([i for i in text if not i.isdigit()])
+
+    correctText = re.sub(r'[^A-Za-z\d\s]', '', correctText)
+    correctText = ''.join([i for i in correctText if not i.isdigit()])
+
+    countText = text.count(" ") + 1
+    countCorrectText = correctText.count(" ") + 1
+
+    splittedText = text.split()
+    splittedOriginal = correctText.split()
+    accuracyVal = 0
+    count = 0
+
+    if splittedText.__len__() == splittedOriginal.__len__():
+        while count < splittedOriginal.__len__():
+            val = similar(splittedText[count],splittedOriginal[count])
+            if val == 1:
+                accuracyVal += 1
+            count += 1
+
+    return accuracyVal/countCorrectText
+
+accuracy = findAccuracy(text,correctTest)
+print(accuracy)
+

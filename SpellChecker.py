@@ -85,7 +85,7 @@ for singleComment in commentList:
 
     singleComment = singleComment.replace("\\'", "'").replace("\\n", " ")
 
-    singleComment = re.sub('[!@#$.,:?"]', ' ', singleComment)
+    singleComment = re.sub('[!@#$,:?"]', ' ', singleComment)
 
     purifiedComments.append(singleComment)
     print(singleComment)
